@@ -1,35 +1,38 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import LandingPage from './pages/LandingPage';
+import AuthPage from './pages/AuthPage';
+import HomeFeed from './pages/HomeFeed';
+import NewReport from './pages/NewReport';
+import PostDetail from './pages/PostDetail';
+import ModerationPanel from './pages/ModerationPanel';
+import UserDashboard from './pages/UserDashboard';
+import ImpactPage from './pages/ImpactPage';
+import AdminPanel from './pages/AdminPanel';
+import HelpCommunity from './pages/HelpCommunity';
+import CivicMap from './pages/CivicMap';
+import Elections from './pages/Elections';
+import DeveloperDocs from './pages/DeveloperDocs';
+import NotFound from './pages/NotFound';
 
-function App() {
-  const [count, setCount] = useState(0)
-
+export default function App() {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/auth" element={<AuthPage />} />
+        <Route path="/home" element={<HomeFeed />} />
+        <Route path="/report" element={<NewReport />} />
+        <Route path="/post/:id" element={<PostDetail />} />
+        <Route path="/moderation" element={<ModerationPanel />} />
+        <Route path="/dashboard" element={<UserDashboard />} />
+        <Route path="/impact" element={<ImpactPage />} />
+        <Route path="/admin" element={<AdminPanel />} />
+        <Route path="/help" element={<HelpCommunity />} />
+        <Route path="/map" element={<CivicMap />} />
+        <Route path="/elections" element={<Elections />} />
+        <Route path="/developer" element={<DeveloperDocs />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
-
-export default App
