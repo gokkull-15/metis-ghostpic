@@ -5,7 +5,6 @@ import HomeFeed from './pages/HomeFeed';
 import NewReport from './pages/NewReport';
 import PostDetail from './pages/PostDetail';
 import ModerationPanel from './pages/ModerationPanel';
-import UserDashboard from './pages/UserDashboard';
 import ImpactPage from './pages/ImpactPage';
 import AdminPanel from './pages/AdminPanel';
 import HelpCommunity from './pages/HelpCommunity';
@@ -16,6 +15,7 @@ import NotFound from './pages/NotFound';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import Aadhar from './pages/ExtractAadhar';
+import Profile from './pages/Profile';
 
 export default function App() {
   return (
@@ -27,10 +27,10 @@ export default function App() {
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/home" element={<HomeFeed />} />
         <Route path="/report" element={<NewReport />} />
-        <Route path="/post/:id" element={<PostDetail />} />
+        <Route path="/post" element={<PostDetail />} />
         <Route path="/complete-kyc" element={<AuthPage />} />
         <Route path="/moderation" element={<ModerationPanel />} />
-        <Route path="/dashboard" element={<UserDashboard />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="/impact" element={<ImpactPage />} />
         <Route path="/admin" element={<AdminPanel />} />
         <Route path="/help" element={<HelpCommunity />} />
