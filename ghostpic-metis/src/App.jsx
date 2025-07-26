@@ -3,7 +3,7 @@ import LandingPage from './pages/LandingPage';
 import AuthPage from './pages/AuthPage';
 import HomeFeed from './pages/HomeFeed';
 import NewReport from './pages/NewReport';
-import PostDetail from './pages/PostDetail';
+import PostPage from './pages/PostPage';
 import ModerationPanel from './pages/ModerationPanel';
 import ImpactPage from './pages/ImpactPage';
 import AdminPanel from './pages/AdminPanel';
@@ -27,7 +27,7 @@ export default function App() {
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/home" element={<HomeFeed />} />
         <Route path="/report" element={<NewReport />} />
-        <Route path="/post" element={<PostDetail />} />
+        <Route path="/post" element={<PostPage />} />
         <Route path="/complete-kyc" element={<AuthPage />} />
         <Route path="/moderation" element={<ModerationPanel />} />
         <Route path="/profile" element={<Profile />} />
