@@ -10,6 +10,7 @@ export default function AuthPage() {
   const [bio, setBio] = useState('');
   const [gender, setGender] = useState('Not Specified');
   const [userId, setUserId] = useState('');
+  const [txHash, setTxHash] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -84,10 +85,24 @@ export default function AuthPage() {
       const tx = await contract.completeKYC(bio, gender, generatedUserId);
       await tx.wait();
 
+  await fetch('http://localhost:5000/api/save-user', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    walletAddress,
+    userId: generatedUserId,
+    txHash: tx.hash
+  })
+  });
+
+
       setSuccess('KYC completed successfully!');
+      setTxHash(tx.hash);
       setBio('');
       setGender('Not Specified');
-      setUserId('');
+      // Do not clear userId here so it remains visible in the success message
     } catch (err) {
       console.error("Error completing KYC:", err);
       setError(err.message || 'Failed to complete KYC');
@@ -127,11 +142,16 @@ export default function AuthPage() {
           )}
 
           {success && (
-            <div className="mb-4 p-4 bg-green-100 border border-green-200 rounded-lg flex items-center">
-              <svg className="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
-              <p className="text-sm font-medium text-green-800">{success}</p>
+            <div className="mb-4 p-4 bg-green-100 border border-green-200 rounded-lg flex flex-col gap-2">
+              <div className="flex items-center">
+                <svg className="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
+                <p className="text-sm font-medium text-green-800">{success}</p>
+              </div>
               {userId && (
-                <span className="ml-2 text-sm text-green-700 font-mono">Your User ID: <span className="font-bold">{userId}</span></span>
+                <span className="text-sm text-green-700 font-mono">Your User ID: <span className="font-bold">{userId}</span></span>
+              )}
+              {txHash && (
+                <span className="text-sm text-green-700 font-mono">Transaction Hash: <a href={`https://sepolia-explorer.metisdevops.link/tx/${txHash}`} target="_blank" rel="noopener noreferrer" className="font-bold underline text-blue-700 hover:text-blue-900">{txHash}</a></span>
               )}
             </div>
           )}
