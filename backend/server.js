@@ -24,10 +24,15 @@ const userSchema = new mongoose.Schema({
 }, { versionKey: false });
 
 const postSchema = new mongoose.Schema({
+  postId: { type: String, required: true, unique: true },
   caption: { type: String, required: true },
   hashtags: { type: [String], default: [] },
   walletAddress: { type: String, required: true },
   imageUrl: { type: String, required: true },
+  like: { type: Number, default: 0 },
+  dislike: { type: Number, default: 0 },
+  comment: { type: [String], default: [] },
+  active: { type: Boolean, default: true },
   createdAt: { type: Date, default: Date.now }
 }, { versionKey: false });
 
@@ -83,12 +88,28 @@ app.post('/api/savePost', async (req, res) => {
     });
   }
 
+  // Generate unique postId
+  function generatePostId() {
+    return 'POST-' + Math.random().toString(36).substr(2, 9) + '-' + Date.now();
+  }
+  const postId = generatePostId();
+
   try {
+    // Ensure postId is unique
+    const existing = await Post.findOne({ postId });
+    if (existing) {
+      return res.status(409).json({ success: false, message: 'Post ID already exists, try again.' });
+    }
     const newPost = new Post({
+      postId,
       caption,
       hashtags: hashtags || [],
       walletAddress,
-      imageUrl
+      imageUrl,
+      like: 0,
+      dislike: 0,
+      comment: [],
+      active: true
     });
 
     await newPost.save();
@@ -105,6 +126,29 @@ app.post('/api/savePost', async (req, res) => {
       message: 'Internal server error',
       error: error.message 
     });
+  }
+});
+
+app.get('/api/posts', async (req, res) => {
+  try {
+    const posts = await Post.find({ active: true }).sort({ createdAt: -1 });
+    res.status(200).json({ success: true, posts });
+  } catch (error) {
+    console.error("Error fetching posts:", error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+app.get('/api/posts/:postId', async (req, res) => {
+  try {
+    const post = await Post.findOne({ postId: req.params.postId, active: true });
+    if (!post) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+    res.status(200).json({ success: true, post });
+  } catch (error) {
+    console.error("Error fetching post:", error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
 

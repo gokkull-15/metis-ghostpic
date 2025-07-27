@@ -16,6 +16,8 @@ import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import Aadhar from './pages/ExtractAadhar';
 import Profile from './pages/Profile';
+import Explore from './pages/Explore';
+import PostDetails from './pages/PostDetail';
 
 export default function App() {
   return (
@@ -37,6 +39,8 @@ export default function App() {
         <Route path="/map" element={<CivicMap />} />
         <Route path="/elections" element={<Elections />} />
         <Route path="/developer" element={<DeveloperDocs />} />
+        <Route path="/explore" element={<Explore />} />
+        <Route path="/explore/:postId" element={<PostDetails />} />
         <Route path="*" element={<NotFound />} />
         <Route path="/aa" element={<Aadhar />} />
       </Routes>
