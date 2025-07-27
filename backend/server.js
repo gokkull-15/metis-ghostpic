@@ -23,6 +23,15 @@ const userSchema = new mongoose.Schema({
   txHash: { type: String, required: true },
 }, { versionKey: false });
 
+const postSchema = new mongoose.Schema({
+  caption: { type: String, required: true },
+  hashtags: { type: [String], default: [] },
+  walletAddress: { type: String, required: true },
+  imageUrl: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now }
+}, { versionKey: false });
+
+const Post = mongoose.model('Post', postSchema, 'posts');
 
 const User = mongoose.model('User', userSchema);
 
@@ -61,6 +70,47 @@ app.get('/api/get-user', async (req, res) => {
     console.error("Error fetching user:", error);
     res.status(500).json({ message: 'Internal server error' });
   }
+});
+
+app.post('/api/savePost', async (req, res) => {
+  const { caption, hashtags, walletAddress, imageUrl } = req.body;
+
+  // Basic validation
+  if (!caption || !walletAddress || !imageUrl) {
+    return res.status(400).json({ 
+      success: false,
+      message: 'Caption, wallet address, and image URL are required' 
+    });
+  }
+
+  try {
+    const newPost = new Post({
+      caption,
+      hashtags: hashtags || [],
+      walletAddress,
+      imageUrl
+    });
+
+    await newPost.save();
+
+    res.status(201).json({ 
+      success: true,
+      message: 'Post saved successfully',
+      post: newPost
+    });
+  } catch (error) {
+    console.error("Error saving post:", error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Internal server error',
+      error: error.message 
+    });
+  }
+});
+
+// Basic health check route
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK' });
 });
 
 app.listen(PORT, () => {
