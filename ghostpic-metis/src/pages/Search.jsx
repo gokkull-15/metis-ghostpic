@@ -67,16 +67,24 @@ const Search = () => {
       return;
     }
 
+    const normalizedQuery = query.replace('#', '').trim().toLowerCase();
+
+    if (normalizedQuery.length === 0) {
+      setFilteredPosts(postsToFilter);
+      return;
+    }
+
     const results = postsToFilter.filter(post => {
-      // Get post hashtags (remove # if present and convert to lowercase)
-      const postHashtags = post.hashtags?.map(tag => 
-        tag.startsWith('#') ? tag.substring(1).toLowerCase() : tag.toLowerCase()
-      ) || [];
-      
-      // Check if any search term matches any post hashtag
-      return searchTerms.some(searchTerm => 
-        postHashtags.includes(searchTerm)
-      );
+      // Check each hashtag in the post
+      return post.hashtags?.some(tag => {
+        // Normalize the tag (remove # if present and convert to lowercase)
+        const normalizedTag = tag.startsWith('#') 
+          ? tag.substring(1).toLowerCase() 
+          : tag.toLowerCase();
+        
+        // Check if the normalized tag starts with the normalized query
+        return normalizedTag.startsWith(normalizedQuery);
+      });
     });
 
     setFilteredPosts(results);
@@ -112,12 +120,6 @@ const Search = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header with Search */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl righteous font-bold text-teal-600 mb-4">
-            Search Posts
-          </h1>
-          <p className="text-gray-400 max-w-2xl mx-auto alegra mb-6">
-            Find posts by hashtags (e.g., ghost art)
-          </p>
           
           {/* Search Bar */}
           <div className="relative max-w-xl mx-auto">
@@ -241,15 +243,6 @@ const PostCard = ({ post }) => {
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
         <div className="text-white">
           <p className="font-medium truncate">{post.caption || 'Untitled'}</p>
-          {post.hashtags?.length > 0 && (
-            <div className="flex flex-wrap mt-1">
-              {post.hashtags.map((tag, index) => (
-                <span key={index} className="text-xs bg-teal-900/50 text-teal-300 px-2 py-1 rounded mr-1 mb-1">
-                  {displayHashtag(tag)}
-                </span>
-              ))}
-            </div>
-          )}
         </div>
       </div>
     </Link>

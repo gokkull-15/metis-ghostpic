@@ -68,7 +68,7 @@ const Header = () => {
               onClick={handleExplore}
               className="bg-gradient-to-r cursor-pointer righteous from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-3 rounded-lg text-lg font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/20 transform hover:scale-105 mb-2 sm:mb-0"
             >
-              Explore
+              Complete KYC
             </button>
             {/* Timer below Explore Button */}
             <span className="text-lg mt-7 font-mono px-8 py-2 rounded-2xl bg-white/20 backdrop-blur-md border border-purple-300/30 shadow-lg text-purple-100 tracking-widest select-none uppercase michroma transition-all duration-300 mt-2">

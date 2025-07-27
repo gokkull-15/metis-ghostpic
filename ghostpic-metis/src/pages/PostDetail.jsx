@@ -84,7 +84,7 @@ const PostDetails = () => {
           <div className="flex flex-wrap gap-2 mb-4">
             {post.hashtags.map((tag, index) => (
               <span key={index} className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-sm">
-                #{tag}
+                {tag}
               </span>
             ))}
           </div>
