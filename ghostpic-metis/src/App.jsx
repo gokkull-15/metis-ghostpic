@@ -8,7 +8,6 @@ import ModerationPanel from './pages/ModerationPanel';
 import ImpactPage from './pages/ImpactPage';
 import AdminPanel from './pages/AdminPanel';
 import HelpCommunity from './pages/HelpCommunity';
-import CivicMap from './pages/CivicMap';
 import Elections from './pages/Elections';
 import DeveloperDocs from './pages/DeveloperDocs';
 import NotFound from './pages/NotFound';
@@ -18,6 +17,7 @@ import Aadhar from './pages/ExtractAadhar';
 import Profile from './pages/Profile';
 import Explore from './pages/Explore';
 import PostDetails from './pages/PostDetail';
+import Search from './pages/Search';
 
 export default function App() {
   return (
@@ -36,7 +36,7 @@ export default function App() {
         <Route path="/impact" element={<ImpactPage />} />
         <Route path="/admin" element={<AdminPanel />} />
         <Route path="/help" element={<HelpCommunity />} />
-        <Route path="/map" element={<CivicMap />} />
+        <Route path="/search" element={<Search />} />
         <Route path="/elections" element={<Elections />} />
         <Route path="/developer" element={<DeveloperDocs />} />
         <Route path="/explore" element={<Explore />} />
