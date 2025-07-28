@@ -15,6 +15,7 @@ import { BiSolidReport } from "react-icons/bi";
 import { MdPrivacyTip, MdSecurity } from "react-icons/md";
 import { useState, useEffect } from "react";
 import { initGA, logPageView, logEvent } from "./utils/analytics";
+import { trackPageView, trackEvent, checkTrackingAvailable, sendTestEvent } from "./utils/gaTracker";
 
 function App() {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -26,43 +27,79 @@ function App() {
   useEffect(() => {
     // Initialize Google Analytics with the Measurement ID from environment variables
     initGA(import.meta.env.VITE_GA_MEASUREMENT_ID);
+
+    // Check if tracking is available
+    const trackingAvailable = checkTrackingAvailable();
+    console.log('Tracking available:', trackingAvailable);
+
+    // Try both tracking methods for redundancy
     
-    // Send pageview with a custom path
+    // Method 1: Using our utility functions
     logPageView(window.location.pathname);
+    logEvent("System", "App Initialized", "Initial Load");
     
-    // Send a test event to verify tracking is working
-    logEvent('System', 'App Initialized', 'Initial Load');
+    // Method 2: Using direct tracker
+    trackPageView();
+    trackEvent("app_initialized", "System", "App Started", 1);
     
-    // Direct gtag call as a backup method
+    // Method 3: Send a test ping that's easier to identify
+    const pingTimestamp = sendTestEvent();
+    console.log(`Test ping sent with timestamp: ${pingTimestamp}`);
+
+    // Method 4: Direct gtag call
     if (window.gtag) {
-      window.gtag('event', 'test_event', {
-        'event_category': 'Testing',
-        'event_label': 'Direct gtag call',
-        'non_interaction': true
+      console.log('Using direct gtag call');
+      window.gtag("event", "direct_test", {
+        event_category: "Testing",
+        event_label: "Direct call from useEffect",
+        send_to: 'G-Q85PTV01ZG'
       });
+    } else {
+      console.error('gtag not available in useEffect');
     }
-    
+
     setIsLoaded(true);
 
     // Animate the stats counter after a short delay
     const timer = setTimeout(() => {
       setAnimateCount(true);
+      
+      // Send another event after a delay to make sure GA has initialized
+      trackEvent("animation_started", "UI", "Stats Animation", 2);
     }, 1000);
 
     return () => clearTimeout(timer);
   }, []);
 
   const handleJoinNow = () => {
-    // Track the "Join Now" button click
+    // Track the "Join Now" button click with both methods
     logEvent("User", "Clicked Join Now", "Join Now Button");
+    trackEvent("clicked_join_now", "User", "Join Now Button", 1);
     
-    window.location.href = "https://forum.ceg.vote/invites/fccyrwUhVc";
-  };
-
-  const toggleMobileMenu = () => {
+    // Add a small delay to ensure tracking completes before navigation
+    console.log('Join Now clicked, sending analytics before navigation');
+    
+    // Direct gtag call as ultimate fallback
+    if (window.gtag) {
+      window.gtag("event", "join_now_click", {
+        event_category: "User",
+        event_label: "Join Now Direct",
+        send_to: 'G-Q85PTV01ZG'
+      });
+    }
+    
+    // Small delay to ensure events are sent
+    setTimeout(() => {
+      window.location.href = "https://forum.ceg.vote/invites/fccyrwUhVc";
+    }, 300);
+  };  const toggleMobileMenu = () => {
     // Track mobile menu toggle
-    logEvent("UI", "Toggled Mobile Menu", showMobileMenu ? "Close Menu" : "Open Menu");
-    
+    logEvent(
+      "UI",
+      "Toggled Mobile Menu",
+      showMobileMenu ? "Close Menu" : "Open Menu"
+    );
+
     setShowMobileMenu(!showMobileMenu);
   };
 
@@ -85,7 +122,11 @@ function App() {
             className="theme-toggle"
             onClick={() => {
               // Track theme toggle
-              logEvent("UI", "Toggled Theme", darkMode ? "Light Mode" : "Dark Mode");
+              logEvent(
+                "UI",
+                "Toggled Theme",
+                darkMode ? "Light Mode" : "Dark Mode"
+              );
               setDarkMode(!darkMode);
             }}
           >
@@ -103,19 +144,34 @@ function App() {
           <nav className={`main-nav ${showMobileMenu ? "show" : ""}`}>
             <ul>
               <li>
-                <a href="#about" onClick={() => {
-                  logEvent("Navigation", "Clicked Nav Link", "About");
-                }}>About</a>
+                <a
+                  href="#about"
+                  onClick={() => {
+                    logEvent("Navigation", "Clicked Nav Link", "About");
+                  }}
+                >
+                  About
+                </a>
               </li>
               <li>
-                <a href="#features" onClick={() => {
-                  logEvent("Navigation", "Clicked Nav Link", "Features");
-                }}>Features</a>
+                <a
+                  href="#features"
+                  onClick={() => {
+                    logEvent("Navigation", "Clicked Nav Link", "Features");
+                  }}
+                >
+                  Features
+                </a>
               </li>
               <li>
-                <a href="#impact" onClick={() => {
-                  logEvent("Navigation", "Clicked Nav Link", "Impact");
-                }}>Impact</a>
+                <a
+                  href="#impact"
+                  onClick={() => {
+                    logEvent("Navigation", "Clicked Nav Link", "Impact");
+                  }}
+                >
+                  Impact
+                </a>
               </li>
               <li>
                 <a href="#" onClick={handleJoinNow} className="nav-cta">
@@ -299,6 +355,27 @@ function App() {
             <span>Join The Movement</span>
             <FaArrowRight className="icon" />
           </button>
+          
+          {/* Hidden debug button - add ?debug=true to URL to show */}
+          {window.location.search.includes('debug=true') && (
+            <button 
+              className="debug-button"
+              onClick={() => {
+                sendTestEvent();
+                alert('Analytics debug event sent. Check console for details.');
+              }}
+              style={{
+                marginTop: '10px', 
+                padding: '5px 10px', 
+                background: '#FF5722', 
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px'
+              }}
+            >
+              Test Analytics
+            </button>
+          )}
         </div>
       </main>
 
