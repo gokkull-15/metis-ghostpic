@@ -23,6 +23,9 @@ function App() {
   const [animateCount, setAnimateCount] = useState(false);
 
   useEffect(() => {
+    // Set document title
+    document.title = "GhostPic";
+    
     // Send page view event to Google Analytics
     if (window.gtag) {
       window.gtag("event", "page_view");
