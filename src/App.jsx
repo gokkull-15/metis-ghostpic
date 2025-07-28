@@ -30,6 +30,18 @@ function App() {
     // Send pageview with a custom path
     logPageView(window.location.pathname);
     
+    // Send a test event to verify tracking is working
+    logEvent('System', 'App Initialized', 'Initial Load');
+    
+    // Direct gtag call as a backup method
+    if (window.gtag) {
+      window.gtag('event', 'test_event', {
+        'event_category': 'Testing',
+        'event_label': 'Direct gtag call',
+        'non_interaction': true
+      });
+    }
+    
     setIsLoaded(true);
 
     // Animate the stats counter after a short delay
