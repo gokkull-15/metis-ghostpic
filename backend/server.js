@@ -160,3 +160,43 @@ app.get('/health', (req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
+
+// Like a post (toggle)
+app.patch('/api/posts/:postId/like', async (req, res) => {
+  try {
+    const { toggle } = req.body;
+    const incValue = toggle ? -1 : 1;
+    const post = await Post.findOneAndUpdate(
+      { postId: req.params.postId },
+      { $inc: { like: incValue } },
+      { new: true }
+    );
+    if (!post) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+    res.status(200).json({ success: true, post });
+  } catch (error) {
+    console.error('Error liking post:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
+// Dislike a post (toggle)
+app.patch('/api/posts/:postId/dislike', async (req, res) => {
+  try {
+    const { toggle } = req.body;
+    const incValue = toggle ? -1 : 1;
+    const post = await Post.findOneAndUpdate(
+      { postId: req.params.postId },
+      { $inc: { dislike: incValue } },
+      { new: true }
+    );
+    if (!post) {
+      return res.status(404).json({ success: false, message: 'Post not found' });
+    }
+    res.status(200).json({ success: true, post });
+  } catch (error) {
+    console.error('Error disliking post:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
