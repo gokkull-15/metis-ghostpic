@@ -14,6 +14,7 @@ import {
 import { BiSolidReport } from "react-icons/bi";
 import { MdPrivacyTip, MdSecurity } from "react-icons/md";
 import { useState, useEffect } from "react";
+import { initGA, logPageView, logEvent } from "./utils/analytics";
 
 function App() {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -23,6 +24,12 @@ function App() {
   const [animateCount, setAnimateCount] = useState(false);
 
   useEffect(() => {
+    // Initialize Google Analytics with the Measurement ID from environment variables
+    initGA(import.meta.env.VITE_GA_MEASUREMENT_ID);
+    
+    // Send pageview with a custom path
+    logPageView(window.location.pathname);
+    
     setIsLoaded(true);
 
     // Animate the stats counter after a short delay
@@ -34,10 +41,16 @@ function App() {
   }, []);
 
   const handleJoinNow = () => {
+    // Track the "Join Now" button click
+    logEvent("User", "Clicked Join Now", "Join Now Button");
+    
     window.location.href = "https://forum.ceg.vote/invites/fccyrwUhVc";
   };
 
   const toggleMobileMenu = () => {
+    // Track mobile menu toggle
+    logEvent("UI", "Toggled Mobile Menu", showMobileMenu ? "Close Menu" : "Open Menu");
+    
     setShowMobileMenu(!showMobileMenu);
   };
 
@@ -58,7 +71,11 @@ function App() {
         <div className="header-controls">
           <button
             className="theme-toggle"
-            onClick={() => setDarkMode(!darkMode)}
+            onClick={() => {
+              // Track theme toggle
+              logEvent("UI", "Toggled Theme", darkMode ? "Light Mode" : "Dark Mode");
+              setDarkMode(!darkMode);
+            }}
           >
             {darkMode ? "☀️" : "🌙"}
           </button>
@@ -74,13 +91,19 @@ function App() {
           <nav className={`main-nav ${showMobileMenu ? "show" : ""}`}>
             <ul>
               <li>
-                <a href="#about">About</a>
+                <a href="#about" onClick={() => {
+                  logEvent("Navigation", "Clicked Nav Link", "About");
+                }}>About</a>
               </li>
               <li>
-                <a href="#features">Features</a>
+                <a href="#features" onClick={() => {
+                  logEvent("Navigation", "Clicked Nav Link", "Features");
+                }}>Features</a>
               </li>
               <li>
-                <a href="#impact">Impact</a>
+                <a href="#impact" onClick={() => {
+                  logEvent("Navigation", "Clicked Nav Link", "Impact");
+                }}>Impact</a>
               </li>
               <li>
                 <a href="#" onClick={handleJoinNow} className="nav-cta">
@@ -158,7 +181,10 @@ function App() {
               className={`feature-card ${
                 activeFeature === "anonymous" ? "active" : ""
               }`}
-              onMouseEnter={() => setActiveFeature("anonymous")}
+              onMouseEnter={() => {
+                setActiveFeature("anonymous");
+                logEvent("Feature", "Hovered Feature", "Anonymous Reporting");
+              }}
               onMouseLeave={() => setActiveFeature(null)}
             >
               <div className="feature-icon">
@@ -175,7 +201,10 @@ function App() {
               className={`feature-card ${
                 activeFeature === "secure" ? "active" : ""
               }`}
-              onMouseEnter={() => setActiveFeature("secure")}
+              onMouseEnter={() => {
+                setActiveFeature("secure");
+                logEvent("Feature", "Hovered Feature", "Secure Verification");
+              }}
               onMouseLeave={() => setActiveFeature(null)}
             >
               <div className="feature-icon">
@@ -192,7 +221,10 @@ function App() {
               className={`feature-card ${
                 activeFeature === "community" ? "active" : ""
               }`}
-              onMouseEnter={() => setActiveFeature("community")}
+              onMouseEnter={() => {
+                setActiveFeature("community");
+                logEvent("Feature", "Hovered Feature", "Community Action");
+              }}
               onMouseLeave={() => setActiveFeature(null)}
             >
               <div className="feature-icon">
@@ -209,7 +241,10 @@ function App() {
               className={`feature-card ${
                 activeFeature === "impact" ? "active" : ""
               }`}
-              onMouseEnter={() => setActiveFeature("impact")}
+              onMouseEnter={() => {
+                setActiveFeature("impact");
+                logEvent("Feature", "Hovered Feature", "Civic Impact");
+              }}
               onMouseLeave={() => setActiveFeature(null)}
             >
               <div className="feature-icon">
