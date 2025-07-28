@@ -2,11 +2,8 @@ import ReactGA from 'react-ga4';
 
 // Initialize Google Analytics
 export const initGA = (trackingId) => {
-  // Initialize in all environments for testing
   ReactGA.initialize(trackingId, {
-    debug: true,
     gaOptions: {
-      debug_mode: true,
       send_page_view: false // We'll manually send the first page view
     }
   });

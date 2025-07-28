@@ -14,8 +14,6 @@ import {
 import { BiSolidReport } from "react-icons/bi";
 import { MdPrivacyTip, MdSecurity } from "react-icons/md";
 import { useState, useEffect } from "react";
-import { initGA, logPageView, logEvent } from "./utils/analytics";
-import { trackPageView, trackEvent, checkTrackingAvailable, sendTestEvent } from "./utils/gaTracker";
 
 function App() {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -25,37 +23,9 @@ function App() {
   const [animateCount, setAnimateCount] = useState(false);
 
   useEffect(() => {
-    // Initialize Google Analytics with the Measurement ID from environment variables
-    initGA(import.meta.env.VITE_GA_MEASUREMENT_ID);
-
-    // Check if tracking is available
-    const trackingAvailable = checkTrackingAvailable();
-    console.log('Tracking available:', trackingAvailable);
-
-    // Try both tracking methods for redundancy
-    
-    // Method 1: Using our utility functions
-    logPageView(window.location.pathname);
-    logEvent("System", "App Initialized", "Initial Load");
-    
-    // Method 2: Using direct tracker
-    trackPageView();
-    trackEvent("app_initialized", "System", "App Started", 1);
-    
-    // Method 3: Send a test ping that's easier to identify
-    const pingTimestamp = sendTestEvent();
-    console.log(`Test ping sent with timestamp: ${pingTimestamp}`);
-
-    // Method 4: Direct gtag call
+    // Send page view event to Google Analytics
     if (window.gtag) {
-      console.log('Using direct gtag call');
-      window.gtag("event", "direct_test", {
-        event_category: "Testing",
-        event_label: "Direct call from useEffect",
-        send_to: 'G-Q85PTV01ZG'
-      });
-    } else {
-      console.error('gtag not available in useEffect');
+      window.gtag("event", "page_view");
     }
 
     setIsLoaded(true);
@@ -63,42 +33,33 @@ function App() {
     // Animate the stats counter after a short delay
     const timer = setTimeout(() => {
       setAnimateCount(true);
-      
-      // Send another event after a delay to make sure GA has initialized
-      trackEvent("animation_started", "UI", "Stats Animation", 2);
     }, 1000);
 
     return () => clearTimeout(timer);
   }, []);
 
   const handleJoinNow = () => {
-    // Track the "Join Now" button click with both methods
-    logEvent("User", "Clicked Join Now", "Join Now Button");
-    trackEvent("clicked_join_now", "User", "Join Now Button", 1);
-    
-    // Add a small delay to ensure tracking completes before navigation
-    console.log('Join Now clicked, sending analytics before navigation');
-    
-    // Direct gtag call as ultimate fallback
+    // Track the "Join Now" button click
     if (window.gtag) {
-      window.gtag("event", "join_now_click", {
+      window.gtag("event", "click", {
         event_category: "User",
-        event_label: "Join Now Direct",
-        send_to: 'G-Q85PTV01ZG'
+        event_label: "Join Now",
       });
     }
-    
+
     // Small delay to ensure events are sent
     setTimeout(() => {
       window.location.href = "https://forum.ceg.vote/invites/fccyrwUhVc";
     }, 300);
-  };  const toggleMobileMenu = () => {
+  };
+  const toggleMobileMenu = () => {
     // Track mobile menu toggle
-    logEvent(
-      "UI",
-      "Toggled Mobile Menu",
-      showMobileMenu ? "Close Menu" : "Open Menu"
-    );
+    if (window.gtag) {
+      window.gtag("event", "toggle_menu", {
+        event_category: "UI",
+        event_label: showMobileMenu ? "Close Menu" : "Open Menu",
+      });
+    }
 
     setShowMobileMenu(!showMobileMenu);
   };
@@ -122,11 +83,12 @@ function App() {
             className="theme-toggle"
             onClick={() => {
               // Track theme toggle
-              logEvent(
-                "UI",
-                "Toggled Theme",
-                darkMode ? "Light Mode" : "Dark Mode"
-              );
+              if (window.gtag) {
+                window.gtag("event", "toggle_theme", {
+                  event_category: "UI",
+                  event_label: darkMode ? "Light Mode" : "Dark Mode",
+                });
+              }
               setDarkMode(!darkMode);
             }}
           >
@@ -147,7 +109,12 @@ function App() {
                 <a
                   href="#about"
                   onClick={() => {
-                    logEvent("Navigation", "Clicked Nav Link", "About");
+                    if (window.gtag) {
+                      window.gtag("event", "nav_click", {
+                        event_category: "Navigation",
+                        event_label: "About",
+                      });
+                    }
                   }}
                 >
                   About
@@ -157,7 +124,12 @@ function App() {
                 <a
                   href="#features"
                   onClick={() => {
-                    logEvent("Navigation", "Clicked Nav Link", "Features");
+                    if (window.gtag) {
+                      window.gtag("event", "nav_click", {
+                        event_category: "Navigation",
+                        event_label: "Features",
+                      });
+                    }
                   }}
                 >
                   Features
@@ -167,7 +139,12 @@ function App() {
                 <a
                   href="#impact"
                   onClick={() => {
-                    logEvent("Navigation", "Clicked Nav Link", "Impact");
+                    if (window.gtag) {
+                      window.gtag("event", "nav_click", {
+                        event_category: "Navigation",
+                        event_label: "Impact",
+                      });
+                    }
                   }}
                 >
                   Impact
@@ -251,7 +228,12 @@ function App() {
               }`}
               onMouseEnter={() => {
                 setActiveFeature("anonymous");
-                logEvent("Feature", "Hovered Feature", "Anonymous Reporting");
+                if (window.gtag) {
+                  window.gtag("event", "feature_hover", {
+                    event_category: "Feature",
+                    event_label: "Anonymous Reporting",
+                  });
+                }
               }}
               onMouseLeave={() => setActiveFeature(null)}
             >
@@ -271,7 +253,12 @@ function App() {
               }`}
               onMouseEnter={() => {
                 setActiveFeature("secure");
-                logEvent("Feature", "Hovered Feature", "Secure Verification");
+                if (window.gtag) {
+                  window.gtag("event", "feature_hover", {
+                    event_category: "Feature",
+                    event_label: "Secure Verification",
+                  });
+                }
               }}
               onMouseLeave={() => setActiveFeature(null)}
             >
@@ -291,7 +278,12 @@ function App() {
               }`}
               onMouseEnter={() => {
                 setActiveFeature("community");
-                logEvent("Feature", "Hovered Feature", "Community Action");
+                if (window.gtag) {
+                  window.gtag("event", "feature_hover", {
+                    event_category: "Feature",
+                    event_label: "Community Action",
+                  });
+                }
               }}
               onMouseLeave={() => setActiveFeature(null)}
             >
@@ -311,7 +303,12 @@ function App() {
               }`}
               onMouseEnter={() => {
                 setActiveFeature("impact");
-                logEvent("Feature", "Hovered Feature", "Civic Impact");
+                if (window.gtag) {
+                  window.gtag("event", "feature_hover", {
+                    event_category: "Feature",
+                    event_label: "Civic Impact",
+                  });
+                }
               }}
               onMouseLeave={() => setActiveFeature(null)}
             >
@@ -355,27 +352,6 @@ function App() {
             <span>Join The Movement</span>
             <FaArrowRight className="icon" />
           </button>
-          
-          {/* Hidden debug button - add ?debug=true to URL to show */}
-          {window.location.search.includes('debug=true') && (
-            <button 
-              className="debug-button"
-              onClick={() => {
-                sendTestEvent();
-                alert('Analytics debug event sent. Check console for details.');
-              }}
-              style={{
-                marginTop: '10px', 
-                padding: '5px 10px', 
-                background: '#FF5722', 
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px'
-              }}
-            >
-              Test Analytics
-            </button>
-          )}
         </div>
       </main>
 
