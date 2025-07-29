@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { BrowserProvider } from 'ethers';
 import axios from 'axios';
-import dp from '../assets/dp.png'; // Make sure this path is correct
+import dp from '../assets/dp.png';
 
 export default function ProfilePage() {
   const [walletAddress, setWalletAddress] = useState('');
@@ -170,13 +170,12 @@ export default function ProfilePage() {
             <div className="flex flex-col md:flex-row md:items-center md:space-x-6 mb-4">
               <h2 className="text-xl font-bold text-white flex items-center">
                 {userData?.userId || 'User ID'}
-                {userData?.verified && (
-                  <span className="ml-2 text-blue-400">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                    </svg>
-                  </span>
-                )}
+                <button className="ml-2  flex items-center border-green-500 border-2 p-2 rounded-full">
+                  <span className=" text-green-500 text-xs font-semibold">Verified</span>
+                  <svg className="w-4 h-4 ml-1 text-green-500" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                  </svg>
+                </button>
               </h2>
             </div>
 

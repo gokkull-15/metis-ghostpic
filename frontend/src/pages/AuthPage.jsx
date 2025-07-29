@@ -41,7 +41,7 @@ export default function AuthPage() {
     const numbers = wallet.substring(10, 14).replace(/[a-f]/gi, '0');
     
     // Combine parts to create a unique ID with required characteristics
-    const generatedId = `METIS-${part1}${part2}${numbers}`;
+    const generatedId = `USER-${part1}${part2}${numbers}`;
     
     // Ensure the ID meets all requirements
     if (
