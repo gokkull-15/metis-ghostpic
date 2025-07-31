@@ -52,7 +52,7 @@ function App() {
 
     // Small delay to ensure events are sent
     setTimeout(() => {
-      window.location.href = "https://forum.ceg.vote/invites/fccyrwUhVc";
+      window.location.href = "https://forum.ceg.vote/invites/RzogV4dPtu";
     }, 300);
   };
   const toggleMobileMenu = () => {
