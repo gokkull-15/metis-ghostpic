@@ -8,59 +8,119 @@ const PostDetails = () => {
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [liked, setLiked] = useState(false);
-  const [disliked, setDisliked] = useState(false);
+  const [userInteraction, setUserInteraction] = useState(null); // 'like', 'dislike', or null
+
+  // Configure axios with auth token (adjust based on how you store the token)
+  const getAuthConfig = () => {
+    const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+    return token ? {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    } : {};
+  };
+
   // Like handler
-  // Like handler (toggle)
   const handleLike = async () => {
-    if (!post || liked) return; // Prevent multiple likes
+    if (!post || userInteraction === 'like') return;
+    
     try {
-      // Add like, remove dislike if set
-      const res = await axios.patch(`http://localhost:5000/api/posts/${postId}/like`, { toggle: false });
-      let newDislike = post.dislike;
-      if (disliked) {
-        const res2 = await axios.patch(`http://localhost:5000/api/posts/${postId}/dislike`, { toggle: true });
-        newDislike = res2.data.post.dislike;
+      const response = await axios.post(
+        `http://localhost:5000/api/posts/${postId}/like`, 
+        {}, 
+        getAuthConfig()
+      );
+      
+      if (response.data.success) {
+        setPost(prev => ({
+          ...prev,
+          likeCount: response.data.post.likeCount,
+          dislikeCount: response.data.post.dislikeCount
+        }));
+        setUserInteraction('like');
       }
-      setPost((prev) => ({ ...prev, like: res.data.post.like, dislike: newDislike }));
-      setLiked(true);
-      setDisliked(false);
     } catch (err) {
-      alert('Failed to like post.');
+      console.error('Like error:', err);
+      if (err.response?.status === 401) {
+        alert('Please log in to like posts.');
+      } else if (err.response?.status === 400) {
+        alert(err.response.data.message || 'You have already liked this post.');
+      } else {
+        alert('Failed to like post.');
+      }
     }
   };
 
+  // Dislike handler
   const handleDislike = async () => {
-    if (!post || disliked) return; // Prevent multiple dislikes
+    if (!post || userInteraction === 'dislike') return;
+    
     try {
-      // Add dislike, remove like if set
-      const res = await axios.patch(`http://localhost:5000/api/posts/${postId}/dislike`, { toggle: false });
-      let newLike = post.like;
-      if (liked) {
-        const res2 = await axios.patch(`http://localhost:5000/api/posts/${postId}/like`, { toggle: true });
-        newLike = res2.data.post.like;
+      const response = await axios.post(
+        `http://localhost:5000/api/posts/${postId}/dislike`, 
+        {}, 
+        getAuthConfig()
+      );
+      
+      if (response.data.success) {
+        setPost(prev => ({
+          ...prev,
+          likeCount: response.data.post.likeCount,
+          dislikeCount: response.data.post.dislikeCount,
+          active: response.data.post.active
+        }));
+        setUserInteraction('dislike');
+        
+        if (!response.data.post.active) {
+          alert('This post has been deactivated due to excessive dislikes.');
+        }
       }
-      setPost((prev) => ({ ...prev, dislike: res.data.post.dislike, like: newLike }));
-      setDisliked(true);
-      setLiked(false);
     } catch (err) {
-      alert('Failed to dislike post.');
+      console.error('Dislike error:', err);
+      if (err.response?.status === 401) {
+        alert('Please log in to dislike posts.');
+      } else if (err.response?.status === 400) {
+        alert(err.response.data.message || 'You have already disliked this post.');
+      } else {
+        alert('Failed to dislike post.');
+      }
     }
   };
 
+  // Fetch post details
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/posts/${postId}`);
-        setPost(response.data.post);
-        setLoading(false);
+        const response = await axios.get(
+          `http://localhost:5000/api/posts/${postId}`,
+          getAuthConfig()
+        );
+        
+        if (response.data.success) {
+          setPost(response.data.post);
+        } else {
+          setError(response.data.message || 'Failed to fetch post');
+        }
       } catch (err) {
-        setError(err.message);
+        console.error('Fetch error:', err);
+        if (err.response?.status === 404) {
+          setError('Post not found');
+        } else if (err.response?.status === 403) {
+          setError('You can only view posts from your state');
+        } else if (err.response?.status === 401) {
+          setError('Please log in to view posts');
+        } else {
+          setError(err.response?.data?.message || 'Failed to load post');
+        }
+      } finally {
         setLoading(false);
       }
     };
 
-    fetchPost();
+    if (postId) {
+      fetchPost();
+    }
   }, [postId]);
 
   if (loading) {
@@ -77,7 +137,18 @@ const PostDetails = () => {
   if (error) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-red-400 text-xl">Error: {error}</div>
+        <div className="text-center">
+          <div className="text-red-400 text-xl mb-4">Error: {error}</div>
+          <Link 
+            to="/explore" 
+            className="inline-flex items-center text-purple-400 hover:text-purple-200"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+            </svg>
+            Back to Explore
+          </Link>
+        </div>
       </div>
     );
   }
@@ -94,13 +165,13 @@ const PostDetails = () => {
     <div className="min-h-screen bg-gray-900 py-8 px-2">
       <div className="max-w-3xl mx-auto">
         <Link 
-          to="/explore" 
+          to="/home" 
           className="inline-flex items-center mb-6 text-purple-400 hover:text-purple-200"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
           </svg>
-          Back to Explore
+          Back to Posts Explorer
         </Link>
 
         <div className="bg-gray-800 rounded-2xl shadow-lg overflow-hidden border border-gray-700">
@@ -119,8 +190,29 @@ const PostDetails = () => {
                   </svg>
                 </div>
                 <div>
-                  <p className="font-semibold text-white">{post.walletAddress.substring(0, 6)}...{post.walletAddress.substring(post.walletAddress.length - 4)}</p>
-                  <p className="text-xs text-gray-400">{new Date(post.createdAt).toLocaleDateString()}</p>
+                  <p className="font-semibold text-white">
+                    {post.authorUsername || 
+                     (post.walletAddress ? 
+                      `${post.walletAddress.substring(0, 6)}...${post.walletAddress.substring(post.walletAddress.length - 4)}` : 
+                      'Anonymous'
+                     )
+                    }
+                  </p>
+                  <div className="flex items-center space-x-2 text-xs text-gray-400">
+                    <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+                    {post.authorState && post.authorState !== 'unknown' && (
+                      <>
+                        <span>•</span>
+                        <span>{post.authorState}</span>
+                      </>
+                    )}
+                    {post.authorLevel && (
+                      <>
+                        <span>•</span>
+                        <span className="capitalize">{post.authorLevel}</span>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
               <button
@@ -132,12 +224,15 @@ const PostDetails = () => {
                     const url = window.URL.createObjectURL(blob);
                     const link = document.createElement('a');
                     link.href = url;
-                    link.download = post.caption ? post.caption.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '.jpg' : 'post.jpg';
+                    link.download = post.caption ? 
+                      post.caption.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '.jpg' : 
+                      `post_${post.postId}.jpg`;
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
                     window.URL.revokeObjectURL(url);
                   } catch (err) {
+                    console.error('Download error:', err);
                     alert('Failed to download image.');
                   }
                 }}
@@ -152,34 +247,48 @@ const PostDetails = () => {
 
             <p className="text-lg text-white font-semibold mb-2">{post.caption}</p>
 
-            <div className="flex flex-wrap gap-2 mb-4">
-              {post.hashtags.map((tag, index) => (
-                <span key={index} className="bg-purple-900/40 text-purple-200 px-2 py-1 rounded-full text-xs">
-                  {tag}
-                </span>
-              ))}
-            </div>
+            {post.hashtags && post.hashtags.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {post.hashtags.map((tag, index) => (
+                  <span key={index} className="bg-purple-900/40 text-purple-200 px-2 py-1 rounded-full text-xs">
+                    {tag.startsWith('#') ? tag : `#${tag}`}
+                  </span>
+                ))}
+              </div>
+            )}
 
             <div className="flex items-center justify-between border-t border-gray-700 pt-4 mt-4">
               <div className="flex space-x-6">
                 <button
-                  className={`flex items-center focus:outline-none ${liked ? 'text-green-400' : 'text-gray-300'} group`}
+                  className={`flex items-center focus:outline-none transition-colors ${
+                    userInteraction === 'like' 
+                      ? 'text-green-400' 
+                      : 'text-gray-300 hover:text-green-300'
+                  } group`}
                   onClick={handleLike}
                   title="Like"
-                  disabled={liked}
+                  disabled={userInteraction === 'like'}
                 >
-                  <GrLike className={`h-5 w-5 mr-1 transition-colors ${liked ? 'text-green-400' : 'group-hover:text-green-300'}`} />
-                  <span className="font-semibold">{post.like}</span>
+                  <GrLike className="h-5 w-5 mr-1" />
+                  <span className="font-semibold">{post.likeCount || 0}</span>
                 </button>
                 <button
-                  className={`flex items-center focus:outline-none ${disliked ? 'text-red-400' : 'text-gray-300'} group`}
+                  className={`flex items-center focus:outline-none transition-colors ${
+                    userInteraction === 'dislike' 
+                      ? 'text-red-400' 
+                      : 'text-gray-300 hover:text-red-300'
+                  } group`}
                   onClick={handleDislike}
                   title="Dislike"
-                  disabled={disliked}
+                  disabled={userInteraction === 'dislike'}
                 >
-                  <GrDislike className={`h-5 w-5 mr-1 transition-colors ${disliked ? 'text-red-400' : 'group-hover:text-red-300'}`} />
-                  <span className="font-semibold">{post.dislike}</span>
+                  <GrDislike className="h-5 w-5 mr-1" />
+                  <span className="font-semibold">{post.dislikeCount || 0}</span>
                 </button>
+              </div>
+              
+              <div className="text-xs text-gray-400">
+                Post ID: {post.postId}
               </div>
             </div>
           </div>

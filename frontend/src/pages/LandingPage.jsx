@@ -39,7 +39,7 @@ const Header = () => {
   }, []);
 
   const handleExplore = () => {
-    navigate('/complete-kyc');
+    navigate('/register');
   };
 
   return (

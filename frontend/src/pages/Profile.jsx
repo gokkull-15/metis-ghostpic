@@ -203,8 +203,8 @@ export default function ProfilePage() {
                 {userData?.username || 'User ID'}
                 <button className="ml-2 flex items-center border-green-500 border-2 p-2 rounded-full">
                   <span className="text-green-500 text-xs font-semibold">
-                    {userData?.userLevel === 'super_active' ? 'Super Active' : 
-                     userData?.userLevel === 'active' ? 'Active' : 'Verified'}
+                    {userData?.userLevel === 'super_active' ? 'Verified' : 
+                     userData?.userLevel === 'active' ? 'Verified' : 'Verified'}
                   </span>
                   <svg className="w-4 h-4 ml-1 text-green-500" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
@@ -216,7 +216,7 @@ export default function ProfilePage() {
             {/* Stats */}
             <div className="flex space-x-8 mb-2">
               <div className="text-center">
-                <span className="font-bold text-white">{userData?.postsCount || 0}</span>
+                <span className="font-bold text-white">{posts?.length || 0}</span>
                 <span className="text-gray-400 block text-sm">Posts</span>
               </div>
               <div className="text-center">
@@ -309,7 +309,7 @@ export default function ProfilePage() {
           <div className="grid grid-cols-3 gap-1">
             {posts.map((post) => (
               <Link 
-                to={`/explore/${post.postId}`} 
+                to={`/posts/${post.postId}`} 
                 key={post.postId}
                 className="group relative block overflow-hidden rounded-lg aspect-square"
               >
