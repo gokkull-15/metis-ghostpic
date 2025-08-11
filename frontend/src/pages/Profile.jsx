@@ -13,6 +13,8 @@ export default function ProfilePage() {
   const [posts, setPosts] = useState([]);
   const [postsLoading, setPostsLoading] = useState(false);
   const [postsError, setPostsError] = useState(null);
+    const [totalLikes, setTotalLikes] = useState(0);
+  const [totalDislikes, setTotalDislikes] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -53,6 +55,16 @@ export default function ProfilePage() {
 
     checkAuthAndWallet();
   }, []);
+
+  useEffect(() => {
+  // Calculate total likes and dislikes whenever posts change
+  if (posts && posts.length > 0) {
+    const likes = posts.reduce((sum, post) => sum + (post.likeCount || 0), 0);
+    const dislikes = posts.reduce((sum, post) => sum + (post.dislikeCount || 0), 0);
+    setTotalLikes(likes);
+    setTotalDislikes(dislikes);
+  }
+}, [posts]);
 
   const fetchDashboardData = async () => {
     try {
@@ -219,18 +231,14 @@ export default function ProfilePage() {
                 <span className="font-bold text-white">{posts?.length || 0}</span>
                 <span className="text-gray-400 block text-sm">Posts</span>
               </div>
-              <div className="text-center">
-                <span className="font-bold text-white">{userData?.postStats?.totalLikes || 0}</span>
-                <span className="text-gray-400 block text-sm">Likes</span>
-              </div>
-              <div className="text-center">
-                <span className="font-bold text-white">{userData?.postStats?.totalDislikes || 0}</span>
-                <span className="text-gray-400 block text-sm">Dislikes</span>
-              </div>
-              <div className="text-center">
-                <span className="font-bold text-white">{userData?.postStats?.engagementRatio || 0}</span>
-                <span className="text-gray-400 block text-sm">Engagement</span>
-              </div>
+<div className="text-center">
+  <span className="font-bold text-white">{totalLikes}</span>
+  <span className="text-gray-400 block text-sm">Likes</span>
+</div>
+<div className="text-center">
+  <span className="font-bold text-white">{totalDislikes}</span>
+  <span className="text-gray-400 block text-sm">Dislikes</span>
+</div>
             </div>
             
             {/* Wallet Address */}

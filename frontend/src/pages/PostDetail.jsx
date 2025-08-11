@@ -10,9 +10,9 @@ const PostDetails = () => {
   const [error, setError] = useState(null);
   const [userInteraction, setUserInteraction] = useState(null); // 'like', 'dislike', or null
 
-  // Configure axios with auth token (adjust based on how you store the token)
+  // Configure axios with auth token (use the same key as Profile.jsx)
   const getAuthConfig = () => {
-    const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+    const token = localStorage.getItem('token');
     return token ? {
       headers: {
         'Authorization': `Bearer ${token}`,
