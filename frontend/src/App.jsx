@@ -3,7 +3,6 @@ import LandingPage from './pages/LandingPage';
 import PostPage from './pages/PostPage';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
-import Aadhar from './pages/ExtractAadhar';
 import Profile from './pages/Profile';
 import PostDetails from './pages/PostDetail';
 import Search from './pages/Search';
@@ -25,7 +24,6 @@ export default function App() {
         <Route path="/search" element={<Search />} />
         <Route path="/home" element={<Home />} />
         <Route path="/posts/:postId" element={<PostDetails />} />
-        <Route path="/aa" element={<Aadhar />} />
       </Routes>
     </BrowserRouter>
   );

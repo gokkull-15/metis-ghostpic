@@ -4,6 +4,7 @@ import { FaEthereum } from 'react-icons/fa';
 import { RiLogoutCircleRLine } from 'react-icons/ri';
 import { MdFeaturedPlayList } from "react-icons/md";
 import LOGOS from '../assets/logo.jpg';
+import "../index.css"
 
 const Navbar = () => {
   const [walletAddress, setWalletAddress] = useState('');
@@ -118,7 +119,7 @@ const Navbar = () => {
               alt="Ghostpic Metis Logo" 
               className="h-10 w-10 object-contain"
             />
-            <h1 className="text-3xl font-bold righteous bg-gradient-to-r from-purple-400 to-blue-500 bg-clip-text text-transparent">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-blue-500 bg-clip-text text-transparent">
               Ghostpic Metis
             </h1>
           </div>
