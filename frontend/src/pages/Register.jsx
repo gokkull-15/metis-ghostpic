@@ -1,6 +1,17 @@
-import { useState } from 'react';
+import { 
+  useState, useEffect } from 'react';
 import { BrowserProvider, Contract } from 'ethers';
 import { abi } from '../abi/NullifierStorageABI.json';
+import {
+  AnonAadhaarProvider,
+  LogInWithAnonAadhaar,
+  useAnonAadhaar,
+} from "@anon-aadhaar/react";
+import ErrorBoundary from "../components/ErrorBoundary";
+
+// Constants that should remain the same for consistent identity
+const APP_ID = "736752789516906243413209479470929762177967151202";
+const DEFAULT_NULLIFIER_SEED = 1234; // Simple numeric seed
 
 const statesList = [
   // States
@@ -17,8 +28,224 @@ const statesList = [
 
 const CONTRACT_ADDRESS = "0x7d444078768BbdBdB42Fb0F001d5d7B3EF3871f0";
 
+// QR Scanner Component
+const SimpleQRScanner = ({ onNullifierReady }) => {
+  const [anonAadhaar] = useAnonAadhaar();
+  const [nullifierId, setNullifierId] = useState(null);
+  
+  // Get or initialize the nullifier seed from localStorage
+  const [nullifierSeed] = useState(() => {
+    try {
+      const storedSeed = localStorage.getItem('anon-aadhaar-nullifier-seed');
+      if (!storedSeed) {
+        localStorage.setItem('anon-aadhaar-nullifier-seed', DEFAULT_NULLIFIER_SEED.toString());
+        return DEFAULT_NULLIFIER_SEED;
+      }
+      return parseInt(storedSeed);
+    } catch (error) {
+      console.error("Error accessing localStorage:", error);
+      return DEFAULT_NULLIFIER_SEED;
+    }
+  });
+
+  // Clear previous login state on component mount
+  useEffect(() => {
+    // Only clear login-related data but preserve the nullifier seed
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && 
+          (key.includes('anon-aadhaar') || 
+           key.includes('anonAadhaar') || 
+           key.includes('proof') ||
+           key.includes('nullifier')) && 
+          // Keep our seed for consistent nullifiers
+          key !== 'anon-aadhaar-nullifier-seed') {
+        keysToRemove.push(key);
+      }
+    }
+    
+    // Remove login state keys but keep the seed
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+  }, []);
+
+  // Extract nullifier when logged in
+  useEffect(() => {
+    if (anonAadhaar.status === "logged-in") {
+      // Get the proof from wherever it might be in the response
+      const getProof = () => {
+        if (anonAadhaar.anonAadhaarProof) return anonAadhaar.anonAadhaarProof;
+        if (anonAadhaar.proof) return anonAadhaar.proof;
+        if (anonAadhaar.anonAadhaarProofs) {
+          return Array.isArray(anonAadhaar.anonAadhaarProofs)
+            ? anonAadhaar.anonAadhaarProofs[0]
+            : anonAadhaar.anonAadhaarProofs;
+        }
+        return null;
+      };
+      
+      const proof = getProof();
+      
+      if (proof) {
+        // Try to extract the nullifier from the proof
+        let nullifier = null;
+        
+        // Try to parse nested PCD structure
+        if (proof["0"] && proof["0"].pcd) {
+          try {
+            const pcdData = JSON.parse(proof["0"].pcd);
+            nullifier = pcdData.proof?.nullifier;
+          } catch {
+            // Silent catch - just continue to other methods
+          }
+        }
+        
+        // Fallback to direct property access
+        if (!nullifier) {
+          nullifier = proof.nullifier || 
+                     proof.nullifierHash || 
+                     proof.nullifier_hash || 
+                     proof.id;
+        }
+        
+        // Update state and notify parent if we found a nullifier
+        if (nullifier) {
+          const nullifierString = String(nullifier);
+          setNullifierId(nullifierString);
+          // Also pass the nullifier seed along with the nullifier
+          onNullifierReady(nullifierString, nullifierSeed);
+        }
+      }
+    }
+  }, [anonAadhaar, onNullifierReady, nullifierSeed]);
+
+  // Handle the "Scan Again" action
+  const handleScanAgain = () => {
+    // Clear nullifier state
+    setNullifierId(null);
+    onNullifierReady('');
+    
+    // Preserve our nullifier seed
+    const seed = localStorage.getItem('anon-aadhaar-nullifier-seed');
+    
+    // Clear all storage
+    sessionStorage.clear();
+    
+    // Clear localStorage except for our seed
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key !== 'anon-aadhaar-nullifier-seed') {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+    
+    // Restore our seed
+    if (seed) {
+      localStorage.setItem('anon-aadhaar-nullifier-seed', seed);
+    }
+    
+    // Reset UI
+    window.location.reload();
+  };
+
+  return (
+    <div className="p-4 bg-gray-900/75 rounded-sm border border-gray-700 mb-6">
+      <h3 className="text-xl font-bold text-white mb-4">Scan Your Aadhaar QR Code</h3>
+
+      {/* Connection Status */}
+      <div className="mb-4 p-2 bg-gray-800 rounded-sm">
+        <div className="flex items-center mb-2">
+          <div className={`w-3 h-3 rounded-full mr-2 ${
+            anonAadhaar.status === "logged-in" ? "bg-green-500" : 
+            anonAadhaar.status === "loading" ? "bg-yellow-500 animate-pulse" : "bg-red-500"
+          }`}></div>
+          <span className="text-gray-300 text-sm">
+            Status: {anonAadhaar.status === "logged-in" ? "Connected" : 
+                    anonAadhaar.status === "loading" ? "Connecting..." : 
+                    anonAadhaar.status === "logged-out" ? "Ready to Connect" : 
+                    "Disconnected"}
+          </span>
+        </div>
+        <div className="text-xs text-gray-500">App ID: {APP_ID.substring(0, 10)}...{APP_ID.substring(APP_ID.length - 5)}</div>
+      </div>
+      
+      {/* Loading indicator */}
+      {anonAadhaar.status === "loading" && (
+        <div className="flex justify-center py-6">
+          <div className="animate-spin h-6 w-6 border-2 border-yellow-500 border-t-transparent rounded-full"></div>
+          <p className="text-yellow-400 ml-3">Connecting to scanner...</p>
+        </div>
+      )}
+
+      {/* QR scanner */}
+      {anonAadhaar.status !== "logged-in" && (
+        <div className="flex flex-col items-center">
+          <p className="text-gray-300 mb-4">Click the button below to scan your Aadhaar QR code</p>
+          <div className="w-full">
+            <LogInWithAnonAadhaar
+              nullifierSeed={nullifierSeed}
+              locale="en"
+              styles={{
+                button: {
+                  backgroundColor: "#4F46E5",
+                  border: "none",
+                  color: "white",
+                  width: "100%",
+                  padding: "0.75rem",
+                  borderRadius: "0.125rem", // 2px
+                  fontWeight: "600",
+                  fontSize: "0.875rem",
+                  cursor: "pointer",
+                  transition: "background-color 150ms ease-in-out",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                },
+                dialogTitle: { color: "white" },
+                containerClassName: "w-full max-w-sm mx-auto",
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Show nullifier when available */}
+      {anonAadhaar.status === "logged-in" && (
+        <div className="mt-4">
+          <div className="p-4 bg-green-900/25 border border-green-500 rounded-sm text-green-300 mb-4">
+            <div className="flex items-center mb-2">
+              <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              <span className="font-semibold">QR Scan Successful!</span>
+            </div>
+            <p className="text-sm mb-2">Your nullifier hash:</p>
+            
+            {/* Enhanced container for nullifier hash with better mobile UI */}
+            <div className="relative bg-black/70 p-3 rounded-sm font-mono text-sm break-all min-h-[80px]">
+              <div className="py-2">{nullifierId}</div>
+            </div>
+          </div>
+          <div className="flex justify-end">
+            <button 
+              onClick={handleScanAgain} 
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-sm transition"
+            >
+              Scan Again
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const Register = () => {
   const [nullifier, setNullifier] = useState('');
+  const [nullifierSeed, setNullifierSeed] = useState(null);
   const [checkResponse, setCheckResponse] = useState(null);
   const [state, setState] = useState('');
   const [password, setPassword] = useState('');
@@ -27,14 +254,22 @@ const Register = () => {
   const [registerResponse, setRegisterResponse] = useState(null);
   const [loading, setLoading] = useState(false);
   const [contract, setContract] = useState(null);
+  
+  // Handler for nullifier update from QR scanner
+  const handleNullifierReady = (nullifierValue, seedValue) => {
+    setNullifier(nullifierValue);
+    setNullifierSeed(seedValue);
+  };
 
   const checkNullifier = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/auth/check-nullifier', {
+      const response = await fetch('/auth/check-nullifier', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nullifier }),
+        body: JSON.stringify({ 
+          nullifierHash: nullifier // Keeping nullifierHash as the parameter name since that's what the API expects
+        }),
       });
       const data = await response.json();
       setCheckResponse(data);
@@ -105,11 +340,11 @@ const Register = () => {
     }
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/auth/register', {
+      const response = await fetch('/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          nullifier,
+          nullifierHash: nullifier, // Use the correct parameter name expected by the API
           kycHash: txHash,
           walletAddress,
           state,
@@ -151,45 +386,42 @@ const Register = () => {
           </p>
         </div>
         <div className="bg-gray-900/75 backdrop-blur-lg p-8 border border-gray-600 rounded-sm shadow-lg hover:shadow-[0_0_30px_#6b46c1] transition-shadow duration-500 space-y-8">
-          {/* Step 1: Check Nullifier */}
+          {/* Step 1: Scan Aadhaar QR and Get Nullifier */}
           <div>
             <div className="flex items-center mb-6">
               <div className="flex items-center justify-center w-10 h-10 bg-purple-600 text-white rounded-full font-bold text-lg mr-4">
                 1
               </div>
-              <h2 className="text-2xl font-bold text-white">Verify Nullifier</h2>
+              <h2 className="text-2xl font-bold text-white">Scan Aadhaar QR Code</h2>
             </div>
-            <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="relative flex-1">
-                  <input
-                    type="text"
-                    value={nullifier}
-                    onChange={(e) => setNullifier(e.target.value)}
-                    placeholder="Enter your nullifier hash"
-                    className="w-full pl-10 pr-4 py-3 rounded-sm bg-black border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-purple-600 transition"
-                  />
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
-                  </div>
-                </div>
+            
+            <ErrorBoundary showDetails={false}>
+              <AnonAadhaarProvider 
+                _autoconnect={false} 
+                _debug={true}
+                _appId={APP_ID}
+              >
+                <SimpleQRScanner onNullifierReady={handleNullifierReady} />
+              </AnonAadhaarProvider>
+            </ErrorBoundary>
+            
+            <div className="space-y-4 mt-4">
+              {nullifier && (
                 <button
                   onClick={checkNullifier}
                   disabled={loading || !nullifier}
-                  className="relative px-6 py-3 uppercase font-bold text-white overflow-hidden rounded-sm shadow-lg transition-transform hover:scale-105 focus:outline-none min-w-[120px]"
+                  className="relative w-full px-6 py-3 uppercase font-bold text-white overflow-hidden rounded-sm shadow-lg transition-transform hover:scale-105 focus:outline-none"
                 >
                   <span className="absolute inset-0 rounded-sm bg-gradient-to-r from-purple-500 via-blue-500 to-cyan-400 animate-borderRotate p-[1.5px]"></span>
                   <span className="relative block bg-black/90 rounded-sm py-2">
                     {loading ? (
                       <span className="flex justify-center items-center gap-2">
-                        <span className="loader"></span> Checking...
+                        <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div> Submitting...
                       </span>
-                    ) : 'Verify'}
+                    ) : 'Submit Nullifier Seed'}
                   </span>
                 </button>
-              </div>
+              )}
               {checkResponse && (
                 <div className={`p-4 rounded-sm border ${checkResponse.success ? 'bg-green-900/25 border-green-500 text-green-300' : 'bg-red-900/25 border-red-500 text-red-300'} animate-fade-in`}>
                   <div className="flex items-center gap-2">
