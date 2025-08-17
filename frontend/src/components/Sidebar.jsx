@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import LOGO from '../assets/logo.jpg';
-import { MdExplore } from "react-icons/md";
 import { IoWifi } from "react-icons/io5";
 
 const Sidebar = () => {

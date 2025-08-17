@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DISPLAY from '../assets/display.png';
-import { SiCodesignal } from "react-icons/si";
 
 const Header = () => {
   const [currentSlide, setCurrentSlide] = useState(1);

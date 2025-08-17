@@ -3,7 +3,7 @@ import { FiShield, FiUsers, FiMail } from 'react-icons/fi';
 import { FaEthereum } from 'react-icons/fa';
 import { RiLogoutCircleRLine } from 'react-icons/ri';
 import { MdFeaturedPlayList } from "react-icons/md";
-import LOGOS from '../assets/logo.jpg';
+import LOGOS from '../assets/logo.png';
 import "../index.css"
 
 const Navbar = () => {
