@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { FiSearch, FiX } from 'react-icons/fi';
 
-const Explore = () => {
+const Search = () => {
   const [posts, setPosts] = useState([]);
   const [filteredPosts, setFilteredPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -258,4 +258,4 @@ const Explore = () => {
   );
 };
 
-export default Explore;
+export default Search;

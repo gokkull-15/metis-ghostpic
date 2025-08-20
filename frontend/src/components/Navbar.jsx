@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { FiShield, FiUsers, FiMail } from 'react-icons/fi';
+import { FiSearch, FiUser } from 'react-icons/fi';
 import { FaEthereum } from 'react-icons/fa';
-import { RiLogoutCircleRLine } from 'react-icons/ri';
-import { MdFeaturedPlayList } from "react-icons/md";
+import { Link, useLocation } from 'react-router-dom';
 import LOGOS from '../assets/logo.png';
 import "../index.css"
+import { MdExplore } from "react-icons/md";
+import { FaPlusCircle } from "react-icons/fa";
 
 const Navbar = () => {
   const [walletAddress, setWalletAddress] = useState('');
   const [isConnected, setIsConnected] = useState(false);
+  const location = useLocation();
 
   // Check if wallet is already connected on component mount
   useEffect(() => {
@@ -27,7 +29,8 @@ const Navbar = () => {
     // Listen for account changes
     window.ethereum?.on('accountsChanged', (accounts) => {
       if (accounts.length === 0) {
-        handleLogout();
+        setWalletAddress('');
+        setIsConnected(false);
       } else {
         setWalletAddress(accounts[0]);
       }
@@ -90,22 +93,19 @@ const Navbar = () => {
     }
   };
 
-  const handleLogout = () => {
-    setWalletAddress('');
-    setIsConnected(false);
-  };
-
   const shortenAddress = (address) => {
     if (!address) return '';
     return `${address.substring(0, 4)}...${address.substring(address.length - 4)}`;
   };
 
+  const isActive = (path) => location.pathname === path;
+
   // Navigation items data
   const navItems = [
-    { label: 'Features', icon: <MdFeaturedPlayList className="mr-2"/>, className:"alegreya" },
-    { label: 'Security', icon: <FiShield className="mr-2" /> },
-    { label: 'Community', icon: <FiUsers className="mr-2" /> },
-    { label: 'Contact', icon: <FiMail className="mr-2" /> }
+    { label: 'Explore', icon: MdExplore, path: '/explore' },
+    { label: 'Search', icon: FiSearch, path: '/search' },
+    { label: 'Create Post', icon: FaPlusCircle, path: '/create-post' },
+    { label: 'Profile', icon: FiUser, path: '/profile' }
   ];
 
   return (
@@ -113,7 +113,7 @@ const Navbar = () => {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Logo and Brand Name */}
-          <div className="flex items-center space-x-3">
+          <Link to="/" className="flex items-center space-x-3">
             <img 
               src={LOGOS}
               alt="Ghostpic Metis Logo" 
@@ -122,38 +122,36 @@ const Navbar = () => {
             <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-blue-500 bg-clip-text text-transparent">
               Ghostpic Metis
             </h1>
-          </div>
+          </Link>
 
           {/* Navigation Items - Hidden on mobile */}
-          <nav className="hidden md:flex space-x-12">
-            {navItems.map((item, index) => (
-              <a 
-                key={index}
-                href="#" 
-                className="flex items-center alegra text-2xl text-gray-300 hover:text-white transition-colors duration-200"
-              >
-                {item.icon}
-                {item.label}
-              </a>
-            ))}
+          <nav className="hidden md:flex">
+            <div className="flex items-center gap-8">
+              {navItems.map(({ label, icon: Icon, path }) => (
+                <Link
+                  key={label}
+                  to={path}
+                  className={`relative inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium tracking-wide transition-all group overflow-hidden border ${
+                    isActive(path)
+                      ? "border-sky-400/60 bg-slate-900/40 shadow-[0_0_18px_-4px_rgba(56,189,248,0.45)]"
+                      : "border-cyan-600/25 hover:border-sky-400/50 bg-slate-900/20 hover:bg-slate-900/30"
+                  }`}
+                >
+                  <span className="absolute inset-0 bg-gradient-to-r from-cyan-700/0 via-sky-500/10 to-blue-700/0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <Icon size={16} className="text-sky-300" />
+                  <span className="relative text-cyan-100">{label}</span>
+                </Link>
+              ))}
+            </div>
           </nav>
 
           {/* Wallet Connection */}
           <div className="flex items-center space-x-4">
             {isConnected ? (
-              <>
-                <div className="flex items-center border-white border-2 bg-gray-800 px-4 py-2 rounded-full">
-                  <FaEthereum className="text-blue-400 mr-2" />
-                  <span className="text-sm text-white font-medium">{shortenAddress(walletAddress)}</span>
-                </div>
-                <button
-                  onClick={handleLogout}
-                  className="flex items-center text-gray-200 hover:text-red-400 transition-colors duration-200"
-                  title="Logout"
-                >
-                  <RiLogoutCircleRLine className="text-xl" />
-                </button>
-              </>
+              <div className="flex items-center border-white border-2 bg-gray-800 px-4 py-2 rounded-full">
+                <FaEthereum className="text-blue-400 mr-2" />
+                <span className="text-sm text-white font-medium">{shortenAddress(walletAddress)}</span>
+              </div>
             ) : (
               <button
                 onClick={connectWallet}
@@ -167,15 +165,17 @@ const Navbar = () => {
 
         {/* Mobile Navigation - Visible only on mobile */}
         <nav className="md:hidden mt-4 flex justify-center space-x-6">
-          {navItems.map((item, index) => (
-            <a 
-              key={index}
-              href="#" 
-              className="text-gray-400 hover:text-white transition-colors duration-200"
-              title={item.label}
+          {navItems.map(({ label, icon: Icon, path }) => (
+            <Link 
+              key={label}
+              to={path}
+              className={`transition-colors duration-200 ${
+                isActive(path) ? "text-sky-300" : "text-gray-400 hover:text-white"
+              }`}
+              title={label}
             >
-              {React.cloneElement(item.icon, { className: 'text-xl' })}
-            </a>
+              <Icon className="text-xl" />
+            </Link>
           ))}
         </nav>
       </div>

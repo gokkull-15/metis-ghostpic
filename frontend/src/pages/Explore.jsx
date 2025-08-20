@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const Home = () => {
+const Explore = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -169,4 +169,4 @@ text-gray-300 text-lg">No ghostly posts found yet</p>
   );
 };
 
-export default Home;
+export default Explore;
