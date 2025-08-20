@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { FiUpload, FiX, FiHash } from 'react-icons/fi';
+import { FiUpload, FiX, FiHash, FiZap } from 'react-icons/fi';
 
 const CreatePost = () => {
   const [caption, setCaption] = useState('');
@@ -11,6 +11,8 @@ const CreatePost = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [isAiSuggesting, setIsAiSuggesting] = useState(false);
+  const [aiSuggestion, setAiSuggestion] = useState(null);
   const navigate = useNavigate();
 
   // Pinata IPFS configuration (should be in environment variables in production)
@@ -77,6 +79,55 @@ const CreatePost = () => {
     }
   };
 
+  const handleAiSuggest = async () => {
+    if (!caption.trim()) {
+      setError('Please enter some content in the caption field first');
+      return;
+    }
+
+    setIsAiSuggesting(true);
+    setError('');
+
+    try {
+      const response = await axios.post(
+        'http://localhost:5001/api/ai-suggest-caption',
+        {
+          content: caption.trim()
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (response.data) {
+        setAiSuggestion(response.data);
+        // Auto-populate the fields with AI suggestions
+        setCaption(response.data.caption);
+        // Convert hashtags array to comma-separated string (keep # symbols from AI)
+        const hashtagsString = response.data.hashtags
+          .map(tag => tag.startsWith('#') ? tag : `#${tag}`)
+          .join(', ');
+        setHashtags(hashtagsString);
+        setSuccess('AI suggestions applied successfully!');
+        setTimeout(() => setSuccess(''), 3000);
+      }
+    } catch (err) {
+      console.error('AI suggestion error:', err);
+      if (err.response?.status === 400) {
+        // Content filtering error
+        setError(err.response.data.error || 'Content not appropriate for civic reporting. Please focus on community issues.');
+      } else if (err.response?.status === 500) {
+        setError('AI service temporarily unavailable. Please try again later.');
+      } else {
+        setError('Failed to get AI suggestions. Please check your internet connection and try again.');
+      }
+    } finally {
+      setIsAiSuggesting(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -98,7 +149,7 @@ const CreatePost = () => {
       const imageUrl = await uploadToIPFS();
       const hashtagsArray = hashtags
         .split(',')
-        .map(tag => tag.trim().replace('#', ''))
+        .map(tag => tag.trim().replace('#', '').trim())
         .filter(tag => tag.length > 0);
 
       const token = localStorage.getItem('token');
@@ -214,18 +265,41 @@ const CreatePost = () => {
               )}
             </div>
             <div className="mb-6">
-              <label htmlFor="caption" className="block mb-1 text-sm font-medium text-gray-300">
-                Caption
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label htmlFor="caption" className="text-sm font-medium text-gray-300">
+                  Caption
+                </label>
+                <button
+                  type="button"
+                  onClick={handleAiSuggest}
+                  disabled={isAiSuggesting || !caption.trim()}
+                  className="flex items-center gap-2 px-3 py-1 text-xs font-medium text-purple-300 bg-purple-900/30 border border-purple-600/50 rounded-md hover:bg-purple-800/40 hover:border-purple-500 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isAiSuggesting ? (
+                    <>
+                      <div className="animate-spin h-3 w-3 border border-purple-300 border-t-transparent rounded-full"></div>
+                      Suggesting...
+                    </>
+                  ) : (
+                    <>
+                      <FiZap className="w-3 h-3" />
+                      AI Suggest
+                    </>
+                  )}
+                </button>
+              </div>
               <textarea
                 id="caption"
                 value={caption}
                 onChange={(e) => setCaption(e.target.value)}
                 className="w-full px-4 py-3 rounded-sm bg-black border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-purple-600 transition"
-                placeholder="What's this post about?"
+                placeholder="What's this post about? (e.g., water problem, road damage, etc.)"
                 rows="3"
                 maxLength="2200"
               />
+              <p className="mt-1 text-xs text-gray-400">
+                Enter a brief description and click "AI Suggest" to get an enhanced caption and hashtags
+              </p>
             </div>
             <div className="mb-6">
               <label htmlFor="hashtags" className="block mb-1 text-sm font-medium text-gray-300">
@@ -241,11 +315,11 @@ const CreatePost = () => {
                   value={hashtags}
                   onChange={(e) => setHashtags(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 rounded-sm bg-black border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-purple-600 transition"
-                  placeholder="comma,separated,values (no # needed)"
+                  placeholder="comma,separated,values (include # for AI suggestions)"
                 />
               </div>
               <p className="mt-1 text-xs text-gray-400">
-                Separate with commas (e.g., ghost, art, web3)
+                Separate with commas (e.g., ghost, art, web3) and include # for AI suggestions (e.g., #ghost, #art, #web3)
               </p>
             </div>
             <button
