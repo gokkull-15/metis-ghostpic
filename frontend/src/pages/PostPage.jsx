@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { FiUpload, FiX, FiHash, FiZap } from 'react-icons/fi';
-import { BD_PORT } from '../const';
+import { BD_PORT, AI_URL_PORT } from '../const';
 
 const CreatePost = () => {
   const [caption, setCaption] = useState('');
@@ -91,7 +91,7 @@ const CreatePost = () => {
 
     try {
       const response = await axios.post(
-        'https://ghost-test-qkc2.onrender.com/api/ai-suggest-caption',
+      `${AI_URL_PORT}/api/ai-suggest-caption`,
         {
           content: caption.trim()
         },
@@ -190,7 +190,7 @@ const CreatePost = () => {
   };
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-12 px-4 sm:px-6 lg:px-8 overflow-hidden">
+    <div className="relative min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 pt-19 py-12 px-4 sm:px-6 lg:px-8 overflow-hidden">
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute top-10 left-0 w-72 h-72 rounded-full bg-gradient-to-tr from-cyan-600/20 via-sky-500/15 to-blue-500/10 blur-3xl" />
         <div className="absolute bottom-0 right-0 w-80 h-80 rounded-full bg-gradient-to-br from-cyan-700/15 via-sky-600/15 to-blue-500/10 blur-3xl" />

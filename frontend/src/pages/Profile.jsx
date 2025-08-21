@@ -199,7 +199,7 @@ export default function ProfilePage() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="relative min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-hidden py-12 px-4 sm:px-6 lg:px-8"
+      className="relative min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 pt-19 overflow-hidden py-12 px-4 sm:px-6 lg:px-8"
     >
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute top-10 left-0 w-72 h-72 rounded-full bg-gradient-to-tr from-cyan-600/20 via-sky-500/15 to-blue-500/10 blur-3xl" />
