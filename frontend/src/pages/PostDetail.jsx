@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { GrLike, GrDislike } from 'react-icons/gr';
+import { motion } from 'framer-motion';
+import { BD_PORT } from '../const';
 
 const PostDetails = () => {
   const { postId } = useParams();
@@ -25,7 +27,7 @@ const PostDetails = () => {
     
     try {
       const response = await axios.post(
-        `http://localhost:5000/api/posts/${postId}/like`, 
+        `${BD_PORT}/api/posts/${postId}/like`, 
         {}, 
         getAuthConfig()
       );
@@ -55,7 +57,7 @@ const PostDetails = () => {
     
     try {
       const response = await axios.post(
-        `http://localhost:5000/api/posts/${postId}/dislike`, 
+        `${BD_PORT}/api/posts/${postId}/dislike`, 
         {}, 
         getAuthConfig()
       );
@@ -89,7 +91,7 @@ const PostDetails = () => {
     const fetchPost = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/posts/${postId}`,
+          `${BD_PORT}/api/posts/${postId}`,
           getAuthConfig()
         );
         
@@ -121,29 +123,39 @@ const PostDetails = () => {
 
   if (loading) {
     return (
-      <div className="relative min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle,rgba(99,102,241,0.1)_1px,transparent_1px)] bg-[length:40px_40px] animate-fade-in"></div>
-        <div className="absolute -top-40 -left-40 w-96 h-96 bg-purple-600/30 blur-3xl rounded-full animate-blob"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-600/30 blur-3xl rounded-full animate-blob animation-delay-4000"></div>
-        <div className="relative z-10 flex flex-col items-center bg-gray-900/75 backdrop-blur-lg p-8 border border-gray-600 rounded-sm shadow-lg hover:shadow-[0_0_30px_#6b46c1] transition-shadow duration-500">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-purple-500 mb-4"></div>
-          <p className="text-gray-300 font-medium">Loading post...</p>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="relative min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center overflow-hidden"
+      >
+        <div className="pointer-events-none absolute inset-0 -z-10">
+          <div className="absolute top-10 left-0 w-72 h-72 rounded-full bg-gradient-to-tr from-cyan-600/20 via-sky-500/15 to-blue-500/10 blur-3xl" />
+          <div className="absolute bottom-0 right-0 w-80 h-80 rounded-full bg-gradient-to-br from-cyan-700/15 via-sky-600/15 to-blue-500/10 blur-3xl" />
         </div>
-      </div>
+        <div className="flex flex-col items-center bg-slate-800/50 backdrop-blur-sm p-8 rounded-xl border border-cyan-600/30">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-cyan-500 mb-4"></div>
+          <p className="text-cyan-200 font-medium">Loading post...</p>
+        </div>
+      </motion.div>
     );
   }
 
   if (error) {
     return (
-      <div className="relative min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle,rgba(99,102,241,0.1)_1px,transparent_1px)] bg-[length:40px_40px] animate-fade-in"></div>
-        <div className="absolute -top-40 -left-40 w-96 h-96 bg-purple-600/30 blur-3xl rounded-full animate-blob"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-600/30 blur-3xl rounded-full animate-blob animation-delay-4000"></div>
-        <div className="relative z-10 bg-gray-900/75 backdrop-blur-lg p-8 border border-gray-600 rounded-sm shadow-lg hover:shadow-[0_0_30px_#6b46c1] transition-shadow duration-500 text-center">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="relative min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center overflow-hidden"
+      >
+        <div className="pointer-events-none absolute inset-0 -z-10">
+          <div className="absolute top-10 left-0 w-72 h-72 rounded-full bg-gradient-to-tr from-cyan-600/20 via-sky-500/15 to-blue-500/10 blur-3xl" />
+          <div className="absolute bottom-0 right-0 w-80 h-80 rounded-full bg-gradient-to-br from-cyan-700/15 via-sky-600/15 to-blue-500/10 blur-3xl" />
+        </div>
+        <div className="bg-slate-800/50 backdrop-blur-sm p-8 rounded-xl border border-cyan-600/30 text-center">
           <div className="text-red-300 text-xl mb-4">Error: {error}</div>
           <Link
             to="/explore"
-            className="inline-flex items-center text-purple-400 hover:text-purple-300 transition-colors"
+            className="inline-flex items-center text-cyan-300 hover:text-sky-300 transition-colors"
           >
             <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -151,65 +163,82 @@ const PostDetails = () => {
             Back to Explore
           </Link>
         </div>
-      </div>
+      </motion.div>
     );
   }
 
   if (!post) {
     return (
-      <div className="relative min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle,rgba(99,102,241,0.1)_1px,transparent_1px)] bg-[length:40px_40px] animate-fade-in"></div>
-        <div className="absolute -top-40 -left-40 w-96 h-96 bg-purple-600/30 blur-3xl rounded-full animate-blob"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-600/30 blur-3xl rounded-full animate-blob animation-delay-4000"></div>
-        <div className="relative z-10 bg-gray-900/75 backdrop-blur-lg p-8 border border-gray-600 rounded-sm shadow-lg hover:shadow-[0_0_30px_#6b46c1] transition-shadow duration-500 text-center">
-          <div className="text-gray-300 text-xl">Post not found</div>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="relative min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center overflow-hidden"
+      >
+        <div className="pointer-events-none absolute inset-0 -z-10">
+          <div className="absolute top-10 left-0 w-72 h-72 rounded-full bg-gradient-to-tr from-cyan-600/20 via-sky-500/15 to-blue-500/10 blur-3xl" />
+          <div className="absolute bottom-0 right-0 w-80 h-80 rounded-full bg-gradient-to-br from-cyan-700/15 via-sky-600/15 to-blue-500/10 blur-3xl" />
         </div>
-      </div>
+        <div className="bg-slate-800/50 backdrop-blur-sm p-8 rounded-xl border border-cyan-600/30 text-center">
+          <div className="text-cyan-200 text-xl">Post not found</div>
+        </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-black via-gray-900 to-black py-8 px-2 overflow-hidden">
-      <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle,rgba(99,102,241,0.1)_1px,transparent_1px)] bg-[length:40px_40px] animate-fade-in"></div>
-      <div className="absolute -top-40 -left-40 w-96 h-96 bg-purple-600/30 blur-3xl rounded-full animate-blob"></div>
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-600/30 blur-3xl rounded-full animate-blob animation-delay-4000"></div>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="relative min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-12 px-6 md:px-12 overflow-hidden"
+    >
+      <div className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute top-10 left-0 w-72 h-72 rounded-full bg-gradient-to-tr from-cyan-600/20 via-sky-500/15 to-blue-500/10 blur-3xl" />
+        <div className="absolute bottom-0 right-0 w-80 h-80 rounded-full bg-gradient-to-br from-cyan-700/15 via-sky-600/15 to-blue-500/10 blur-3xl" />
+      </div>
       <div className="relative z-10 max-w-3xl mx-auto">
         <Link
-          to="/home"
-          className="inline-flex items-center mb-6 text-purple-400 hover:text-purple-300 transition-colors"
+          to="/explore"
+          className="inline-flex items-center mb-6 text-cyan-300 hover:text-sky-300 transition-colors"
         >
           <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-          Back to Posts Explorer
+          Back to Explore
         </Link>
-        <div className="bg-gray-900/75 backdrop-blur-lg rounded-sm border border-gray-600 shadow-lg hover:shadow-[0_0_30px_#6b46c1] transition-shadow duration-500 overflow-hidden">
-          <img
-            src={post.imageUrl}
-            alt={post.caption}
-            className="w-full h-96 object-contain bg-black/90 border-b border-gray-700"
-            onError={(e) => {
-              e.target.src = 'https://via.placeholder.com/300x300?text=Image+Not+Found';
-              e.target.className = 'w-full h-96 object-contain bg-black/90';
-            }}
-          />
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm rounded-xl border border-cyan-600/30 hover:border-sky-400/60 overflow-hidden transition-all duration-300 hover:shadow-[0_0_25px_-8px_rgba(56,189,248,0.35)]"
+        >
+          <div className="relative overflow-hidden">
+            <img
+              src={post.imageUrl}
+              alt={post.caption || 'Post'}
+              className="w-full h-96 object-contain bg-slate-900 border-b border-cyan-600/30 group-hover:scale-105 transition-transform duration-500"
+              onError={(e) => {
+                e.target.src = 'https://via.placeholder.com/300x300?text=Image+Not+Found';
+                e.target.className = 'w-full h-96 object-contain bg-slate-900';
+              }}
+            />
+          </div>
           <div className="p-6">
             <div className="flex items-center mb-4 justify-between">
               <div className="flex items-center">
-                <div className="w-10 h-10 bg-gradient-to-r from-purple-500 via-blue-500 to-cyan-500 flex items-center justify-center rounded-md shadow-[0_0_15px_rgba(139,92,246,0.9)] mr-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-cyan-600 via-sky-500 to-blue-500 flex items-center justify-center rounded-md shadow-[0_0_15px_rgba(56,189,248,0.9)] mr-3">
                   <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
                 <div>
-                  <p className="font-semibold text-white">
+                  <p className="font-semibold text-cyan-100">
                     {post.authorUsername || 
                      (post.walletAddress ? 
                       `${post.walletAddress.substring(0, 6)}...${post.walletAddress.substring(post.walletAddress.length - 4)}` : 
                       'Anonymous'
                      )}
                   </p>
-                  <div className="flex items-center space-x-2 text-xs text-gray-400">
+                  <div className="flex items-center space-x-2 text-xs text-cyan-300">
                     <span>{new Date(post.createdAt).toLocaleDateString()}</span>
                     {post.authorState && post.authorState !== 'unknown' && (
                       <>
@@ -227,7 +256,7 @@ const PostDetails = () => {
                 </div>
               </div>
               <button
-                className="relative px-3 py-1 uppercase font-bold text-white overflow-hidden rounded-sm shadow-lg transition-transform hover:scale-105 focus:outline-none"
+                className="py-2 px-4 font-bold text-cyan-100 rounded-xl transition-all border border-cyan-600/25 hover:border-sky-400/60 bg-slate-900/20 hover:bg-slate-900/30"
                 onClick={async () => {
                   try {
                     const response = await fetch(post.imageUrl, { mode: 'cors' });
@@ -249,32 +278,29 @@ const PostDetails = () => {
                 }}
                 title="Download image"
               >
-                <span className="absolute inset-0 rounded-sm bg-gradient-to-r from-purple-500 via-blue-500 to-cyan-400 animate-borderRotate p-[1.5px]"></span>
-                <span className="relative block bg-black/90 rounded-sm py-1 px-2">
-                  <svg className="w-5 h-5 inline mr-1 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 4v12" />
-                  </svg>
-                  Download
-                </span>
+                <svg className="w-5 h-5 inline mr-1 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 4v12" />
+                </svg>
+                Download
               </button>
             </div>
-            <p className="text-lg text-white font-semibold mb-2">{post.caption}</p>
+            <p className="text-lg text-cyan-100 font-semibold mb-2">{post.caption || 'Untitled Post'}</p>
             {post.hashtags && post.hashtags.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-4">
                 {post.hashtags.map((tag, index) => (
-                  <span key={index} className="bg-black/90 border border-purple-600 text-purple-300 px-2 py-1 rounded-sm text-xs">
+                  <span key={index} className="bg-slate-900/50 border border-cyan-600/30 text-cyan-300 px-2 py-1 rounded-xl text-xs">
                     {tag.startsWith('#') ? tag : `#${tag}`}
                   </span>
                 ))}
               </div>
             )}
-            <div className="flex items-center justify-between border-t border-gray-700 pt-4 mt-4">
+            <div className="flex items-center justify-between border-t border-cyan-600/30 pt-4 mt-4">
               <div className="flex space-x-6">
                 <button
                   className={`flex items-center focus:outline-none transition-colors ${
                     userInteraction === 'like' 
                       ? 'text-green-400' 
-                      : 'text-gray-300 hover:text-green-300'
+                      : 'text-cyan-300 hover:text-green-300'
                   } group`}
                   onClick={handleLike}
                   title="Like"
@@ -287,7 +313,7 @@ const PostDetails = () => {
                   className={`flex items-center focus:outline-none transition-colors ${
                     userInteraction === 'dislike' 
                       ? 'text-red-400' 
-                      : 'text-gray-300 hover:text-red-300'
+                      : 'text-cyan-300 hover:text-red-300'
                   } group`}
                   onClick={handleDislike}
                   title="Dislike"
@@ -297,14 +323,14 @@ const PostDetails = () => {
                   <span className="font-semibold">{post.dislikeCount || 0}</span>
                 </button>
               </div>
-              <div className="text-xs text-gray-400">
+              <div className="text-xs text-cyan-300">
                 Post ID: {post.postId}
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

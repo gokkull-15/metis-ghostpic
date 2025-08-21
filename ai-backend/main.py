@@ -72,10 +72,19 @@ def suggest_caption():
 
         # Content filtering
         inappropriate_keywords = [
-            'sex', 'sexual', 'nude', 'nudity', 'porn', 'adult', 'xxx', 'erotic',
-            'violence', 'kill', 'murder', 'weapon', 'gun', 'bomb', 'terror',
-            'hate', 'racist', 'discrimination', 'abuse', 'harassment'
-        ]
+    # Adult / explicit content
+    'sex', 'sexual', 'nude', 'nudity', 'porn', 'adult', 'xxx', 'erotic',
+
+    # Hate / harassment
+    'hate', 'racist', 'discrimination', 'abuse', 'harassment', 
+    'genocide', 'ethnic cleansing', 'insurrection', 'armed attack',
+
+    # Political/National targeting
+    'overthrow government', 'destroy nation', 'attack party', 
+    'eliminate party', 'down with', 'burn flag', 'bomb parliament', 
+    'kill president', 'kill prime minister', 'kill leader',
+    'threaten government', 'target embassy', 'political assassination'
+]
 
         content_lower = user_content.lower()
         for keyword in inappropriate_keywords:
@@ -211,9 +220,22 @@ IMPORTANT: Make sure your JSON response is COMPLETE with all closing brackets an
             'error': 'Service temporarily unavailable. Please try again later.'
         }), 500
 
+@app.route('/', methods=['GET'])
+def root():
+    return jsonify({
+        'service': 'Metis AI Backend',
+        'status': 'running',
+        'version': '1.0.0',
+        'endpoints': {
+            'health': '/health',
+            'ai_suggest_caption': '/api/ai-suggest-caption'
+        }
+    })
+
 @app.route('/health', methods=['GET'])
 def health_check():
     return jsonify({'status': 'healthy', 'service': 'alith-ai-suggestion-api'})
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5001)
+    port = int(os.environ.get('PORT', 5001))
+    app.run(host='0.0.0.0', port=port, debug=False)

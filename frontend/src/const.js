@@ -1,0 +1,1 @@
+export const BD_PORT = 'https://backend-ombwttdrc-gokkull04s-projects.vercel.app'; 

@@ -12,7 +12,7 @@ import Explore from './pages/Explore';
 export default function App() {
   return (
     <BrowserRouter>
-    <Navbar />
+    <Navbar/>
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/register" element={<Register />} />
